@@ -1,0 +1,260 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+#include <map>
+
+using namespace std;
+
+class DatosEstudiante {
+public:
+    string fechaCorte;
+    string uuid;
+    string ubigeo;
+    string departamento;
+    string provincia;
+    string distrito;
+    string sexo;
+    string fechaNacimiento;
+    int edad;
+    string facultad;
+    string escuelaAcademica;
+    string nivelAcademico;
+    int anioMatricula1;
+    int semMatricula1;
+    int nRacDesayuno;
+    int nRacAlmuerzo;
+    int nRacCena;
+};
+
+class GestorEstudiantes {
+public:
+    GestorEstudiantes(int numEstudiantes) : numEstudiantes(numEstudiantes) {
+        datosEstudiantes = new DatosEstudiante[numEstudiantes];
+    }
+
+    ~GestorEstudiantes() {
+        delete[] datosEstudiantes;
+    }
+
+    void leerDatosEstudiantes(const string& archivo_csv) {
+        ifstream archivo(archivo_csv);
+        if (!archivo.is_open()) {
+            cerr << "Error al abrir el archivo." << endl;
+            return;
+        }
+
+        string linea;
+        int indice = 0;
+        while (getline(archivo, linea) && indice < numEstudiantes) {
+            istringstream ss(linea);
+            string campo;
+
+            getline(ss, datosEstudiantes[indice].fechaCorte, ',');
+            getline(ss, datosEstudiantes[indice].uuid, ',');
+            getline(ss, datosEstudiantes[indice].ubigeo, ',');
+            getline(ss, datosEstudiantes[indice].departamento, ',');
+            getline(ss, datosEstudiantes[indice].provincia, ',');
+            getline(ss, datosEstudiantes[indice].distrito, ',');
+            getline(ss, datosEstudiantes[indice].sexo, ',');
+            getline(ss, datosEstudiantes[indice].fechaNacimiento, ',');
+            ss >> datosEstudiantes[indice].edad;
+            getline(ss, campo, ',');
+            getline(ss, datosEstudiantes[indice].facultad, ',');
+            getline(ss, datosEstudiantes[indice].escuelaAcademica, ',');
+            getline(ss, datosEstudiantes[indice].nivelAcademico, ',');
+            ss >> datosEstudiantes[indice].anioMatricula1;
+            getline(ss, campo, ',');
+            ss >> datosEstudiantes[indice].semMatricula1;
+            getline(ss, campo, ',');
+            ss >> datosEstudiantes[indice].nRacDesayuno;
+            getline(ss, campo, ',');
+            ss >> datosEstudiantes[indice].nRacAlmuerzo;
+            getline(ss, campo, ',');
+            ss >> datosEstudiantes[indice].nRacCena;
+
+            indice++;
+        }
+
+        archivo.close();
+    }
+
+    void buscarEstudiantePorUUID(const string& uuid) const {
+        for (int i = 0; i < numEstudiantes; i++) {
+            if (datosEstudiantes[i].uuid == uuid) {
+                imprimirEstudiante(datosEstudiantes[i]);
+                return;
+            }
+        }
+        cout << "Estudiante con UUID " << uuid << " no encontrado." << endl;
+    }
+
+    void imprimirDatosEstudiantes() const {
+        for (int i = 0; i < numEstudiantes; i++) {
+            cout << "Fecha de Corte: " << datosEstudiantes[i].fechaCorte << ", UUID: " << datosEstudiantes[i].uuid << ", Edad: " << datosEstudiantes[i].edad << endl;
+        }
+    }
+
+    double calcularPromedioEdad() const {
+        int sumaEdades = 0;
+        for (int i = 0; i < numEstudiantes; i++) {
+            sumaEdades += datosEstudiantes[i].edad;
+        }
+        return static_cast<double>(sumaEdades) / numEstudiantes;
+    }
+
+    void contarEstudiantesPorFacultad() const {
+        map<string, int> conteoFacultades;
+        for (int i = 0; i < numEstudiantes; i++) {
+            conteoFacultades[datosEstudiantes[i].facultad]++;
+        }
+        for (const auto& par : conteoFacultades) {
+            cout << "Facultad: " << par.first << ", Cantidad de estudiantes: " << par.second << endl;
+        }
+    }
+
+    void contarEstudiantesPorNivelAcademico() const {
+        map<string, int> conteoNiveles;
+        for (int i = 0; i < numEstudiantes; i++) {
+            conteoNiveles[datosEstudiantes[i].nivelAcademico]++;
+        }
+        for (const auto& par : conteoNiveles) {
+            cout << "Nivel Académico: " << par.first << ", Cantidad de estudiantes: " << par.second << endl;
+        }
+    }
+
+    void buscarEstudiantesPorDepartamento(const string& departamento) const {
+        for (int i = 0; i < numEstudiantes; i++) {
+            if (datosEstudiantes[i].departamento == departamento) {
+                imprimirEstudiante(datosEstudiantes[i]);
+            }
+        }
+    }
+
+    void buscarEstudiantesPorSexo(const string& sexo) const {
+        for (int i = 0; i < numEstudiantes; i++) {
+            if (datosEstudiantes[i].sexo == sexo) {
+                imprimirEstudiante(datosEstudiantes[i]);
+            }
+        }
+    }
+
+    void calcularTotalRaciones(int& totalDesayuno, int& totalAlmuerzo, int& totalCena) const {
+        totalDesayuno = 0;
+        totalAlmuerzo = 0;
+        totalCena = 0;
+        for (int i = 0; i < numEstudiantes; i++) {
+            totalDesayuno += datosEstudiantes[i].nRacDesayuno;
+            totalAlmuerzo += datosEstudiantes[i].nRacAlmuerzo;
+            totalCena += datosEstudiantes[i].nRacCena;
+        }
+    }
+
+private:
+    void imprimirEstudiante(const DatosEstudiante& estudiante) const {
+        cout << "Fecha de Corte: " << estudiante.fechaCorte << endl;
+        cout << "UBIGEO: " << estudiante.ubigeo << endl;
+        cout << "DEPARTAMENTO: " << estudiante.departamento << endl;
+        cout << "PROVINCIA: " << estudiante.provincia << endl;
+        cout << "DISTRITO: " << estudiante.distrito << endl;
+        cout << "SEXO: " << estudiante.sexo << endl;
+        cout << "FECHA_NACIMIENTO: " << estudiante.fechaNacimiento << endl;
+        cout << "EDAD: " << estudiante.edad << endl;
+        cout << "FACULTAD: " << estudiante.facultad << endl;
+        cout << "ESCUELA_ACADEMICA: " << estudiante.escuelaAcademica << endl;
+        cout << "NIVEL_ACAD: " << estudiante.nivelAcademico << endl;
+        cout << "ANIO_MAT1: " << estudiante.anioMatricula1 << endl;
+        cout << "SEM_MATRICULA1: " << estudiante.semMatricula1 << endl;
+        cout << "N_RAC_DESAYUNO: " << estudiante.nRacDesayuno << endl;
+        cout << "N_RAC_ALMUERZO: " << estudiante.nRacAlmuerzo << endl;
+        cout << "N_RAC_CENA: " << estudiante.nRacCena << endl;
+    }
+
+    DatosEstudiante* datosEstudiantes;
+    int numEstudiantes;
+};
+
+void mostrarMenu() {
+    cout << "MENU:" << endl;
+    cout << "1. Leer datos de estudiantes" << endl;
+    cout << "2. Imprimir datos de todos los estudiantes" << endl;
+    cout << "3. Buscar estudiante por UUID" << endl;
+    cout << "4. Calcular promedio de edad" << endl;
+    cout << "5. Contar estudiantes por facultad" << endl;
+    cout << "6. Contar estudiantes por nivel académico" << endl;
+    cout << "7. Buscar estudiantes por departamento" << endl;
+    cout << "8. Buscar estudiantes por sexo" << endl;
+    cout << "9. Calcular total de raciones" << endl;
+    cout << "0. Salir" << endl;
+}
+
+int main() {
+    const int NUM_ESTUDIANTES = 6; // Ajustar según la cantidad real de estudiantes
+    GestorEstudiantes gestor(NUM_ESTUDIANTES);
+
+    int opcion;
+    string archivoCSV;
+    string uuidBuscado;
+    string departamentoBuscado;
+    string sexoBuscado;
+    int totalDesayuno, totalAlmuerzo, totalCena;
+
+    do {
+        mostrarMenu();
+        cout << "Seleccione una opción: ";
+        cin >> opcion;
+
+        switch (opcion) {
+            case 1:
+                cout << "Ingrese el nombre del archivo CSV: ";
+                cin >> archivoCSV;
+                gestor.leerDatosEstudiantes(archivoCSV);
+                break;
+            case 2:
+                gestor.imprimirDatosEstudiantes();
+                break;
+            case 3:
+                cout << "Ingrese el UUID: ";
+                cin >> uuidBuscado;
+                gestor.buscarEstudiantePorUUID(uuidBuscado);
+                break;
+            case 4:
+                cout << "Promedio de edad: " << gestor.calcularPromedioEdad() << endl;
+                break;
+            case 5:
+                gestor.contarEstudiantesPorFacultad();
+                break;
+            case 6:
+                gestor.contarEstudiantesPorNivelAcademico();
+                break;
+            case 7:
+                cout << "Ingrese el departamento: ";
+                cin >> departamentoBuscado;
+                gestor.buscarEstudiantesPorDepartamento(departamentoBuscado);
+                break;
+            case 8:
+                cout << "Ingrese el sexo (MASCULINO o FEMENINO): ";
+                cin >> sexoBuscado;
+                gestor.buscarEstudiantesPorSexo(sexoBuscado);
+                break;
+            case 9:
+                gestor.calcularTotalRaciones(totalDesayuno, totalAlmuerzo, totalCena);
+                cout << "Total de Raciones:" << endl;
+                cout << "Desayuno: " << totalDesayuno << endl;
+                cout << "Almuerzo: " << totalAlmuerzo << endl;
+                cout << "Cena: " << totalCena << endl;
+                break;
+            case 0:
+                cout << "Saliendo del programa." << endl;
+                break;
+            default:
+                cout << "Opción inválida. Intente de nuevo." << endl;
+                break;
+        }
+
+        cout << endl;
+
+    } while (opcion != 0);
+
+    return 0;
+}
